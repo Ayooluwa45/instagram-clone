@@ -1,9 +1,43 @@
+import { useState, useEffect } from "react";
 import "./App.css";
 import Post from "./Post";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+} from "firebase/firestore";
+import { db } from "./firebase.js";
+
+import BasicModal from "./Model";
+
 
 function App() {
+  const [posts, setPosts] = useState();
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    onSnapshot(collection(db, "posts"), (snapshot) =>
+      setPosts(
+        snapshot.docs.map((doc) => ({
+          id: doc.id,
+          post: doc.data(),
+        }))
+      )
+    );
+
+    /* db.collection('posts').onSnapshot(snapshot=>{
+      setPosts(snapshot.docs.map(doc=>doc.data()))
+    }
+    ) */
+  }, []);
+
+
   return (
     <div className="app">
+   
       <div className="app__header">
         <img
           className="app__headerImage"
@@ -11,15 +45,17 @@ function App() {
           alt=""
         />
       </div>
+      <BasicModal />
 
       <h1>Lets build an app</h1>
-
-      <Post/>
-      <Post/>
-      <Post/>
-      <Post/>
-
-    
+      {/* {posts.map(({ id, post }) => (
+        <Post
+          key={id}
+          username={post.username}
+          caption={post.caption}
+          imageUrl={post.imageUrl}
+        />
+      ))} */}
     </div>
   );
 }
