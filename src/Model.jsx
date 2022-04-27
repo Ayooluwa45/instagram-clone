@@ -7,8 +7,12 @@ import {
   getAuth,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  signInWithEmailAndPassword 
 } from "firebase/auth";
 import { auth } from "./firebase.js";
+import ImageUpload from "./ImageUpload.jsx";
+
+
 
 const style = {
   position: "absolute",
@@ -26,6 +30,7 @@ export default function BasicModal() {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const [openSignIn, setOpenSignIn]= useState(false)
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -64,6 +69,8 @@ export default function BasicModal() {
       console.log(error.message);
     }
 
+    setOpen(false)
+
     /* .then((userCredential) => {
     // Signed in 
     const user = userCredential.user;
@@ -85,12 +92,34 @@ export default function BasicModal() {
     .catch((error)=> alert(error.message))  */
   };
 
+  
+  const signIn = async (e)=>{
+    try {
+        e.preventDefault();
+        const user = await signInWithEmailAndPassword( auth,email, password);
+        onAuthStateChanged(auth, (currentUser) => {
+          setUser(currentUser);
+        });
+        console.log(user);
+      } catch (error) {
+        alert(error.message);
+      }
+      setOpenSignIn(false)
+  }
+
   return (
+  
     <div>
+      
       {user ? (
         <button onClick={() => auth.signOut()}> Logout</button>
       ) : (
+        <div className="loginContainer"> 
+        <Button onClick={()=>setOpenSignIn(true)}>Sign In</Button>
         <Button onClick={handleOpen}>Sign Up</Button>
+    
+        </div>
+        
       )}
 
       <Modal
@@ -136,6 +165,53 @@ export default function BasicModal() {
           </center>
         </Box>
       </Modal>
+
+
+      <Modal
+        open={openSignIn}
+        onClose={()=> setOpenSignIn(false)}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <center>
+            <div className="app__header">
+              <img
+                className="app__headerImage"
+                src="https://www.instagram.com/static/images/web/mobile_nav_type_logo.png/735145cfe0a4.png"
+                alt=""
+              />
+              <form className="signUp">
+         
+
+                <input
+                  type="email"
+                  placeholder="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+
+                <input
+                  type="password"
+                  placeholder="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button type="submit" onClick={signIn}>
+                  Sign In
+                </button>
+              </form>
+            </div>
+          </center>
+        </Box>
+      </Modal>
+
+      {user?.currentUser ? (
+ <ImageUpload username={user.currentUser}/>
+      ):(
+        <h3>Sorry you need to login to upload</h3>
+      )}
+     
     </div>
   );
 }
