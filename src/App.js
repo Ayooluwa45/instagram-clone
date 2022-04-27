@@ -10,7 +10,7 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { db } from "./firebase.js";
-
+import ImageUpload from "./ImageUpload.jsx";
 import BasicModal from "./Model";
 
 
@@ -46,16 +46,17 @@ function App() {
         />
       </div>
       <BasicModal />
+    
 
-      <h1>Lets build an app</h1>
-      {/* {posts.map(({ id, post }) => (
+       <h1>Lets build an app</h1>
+      {/*  {posts.map(({ id, post }) => (
         <Post
           key={id}
           username={post.username}
           caption={post.caption}
           imageUrl={post.imageUrl}
         />
-      ))} */}
+      ))}   */}
     </div>
   );
 }
