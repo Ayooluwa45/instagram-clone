@@ -15,7 +15,7 @@ import BasicModal from "./Model";
 
 
 function App() {
-  const [posts, setPosts] = useState();
+  /*  const [posts, setPosts] = useState();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -28,11 +28,7 @@ function App() {
       )
     );
 
-    /* db.collection('posts').onSnapshot(snapshot=>{
-      setPosts(snapshot.docs.map(doc=>doc.data()))
-    }
-    ) */
-  }, []);
+  }, []);  */
 
 
   return (
@@ -45,18 +41,18 @@ function App() {
           alt=""
         />
       </div>
-      <BasicModal />
+          <BasicModal />
     
 
        <h1>Lets build an app</h1>
-      {/*  {posts.map(({ id, post }) => (
-        <Post
+    {/*    {posts.map(({ id, post }) => (
+       <Post
           key={id}
           username={post.username}
           caption={post.caption}
           imageUrl={post.imageUrl}
         />
-      ))}   */}
+      ))}   */} 
     </div>
   );
 }
