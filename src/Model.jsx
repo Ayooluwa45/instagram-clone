@@ -7,11 +7,23 @@ import {
   getAuth,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
-  signInWithEmailAndPassword 
+  signInWithEmailAndPassword, 
+  updateProfile
 } from "firebase/auth";
 import { auth } from "./firebase.js";
 import ImageUpload from "./ImageUpload.jsx";
-
+import { storage, db } from "./firebase";
+import {getDownloadURL, listAll, ref, uploadBytes} from 'firebase/storage'
+import {v4} from 'uuid'
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+} from "firebase/firestore";
+import Post from "./Post";
 
 
 const style = {
@@ -36,6 +48,48 @@ export default function BasicModal() {
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
 
+   const [caption, setCaption] = useState("");
+  const [image, setImage] = useState(null);
+  const [progress, setProgress] = useState("");
+
+
+  const [posts, setPosts] = useState();
+  const imageListRef = ref(storage, 'images/')
+ 
+
+  useEffect(() => {
+    onSnapshot(collection(db, "posts"), (snapshot) =>
+      setPosts(
+        snapshot.docs.map((doc) => ({
+          id: doc.id,
+          post: doc.data(),
+        }))
+      )
+    );
+listAll(imageListRef).then((response)=>{
+  response.items.forEach((item)=>{
+    getDownloadURL(item).then((url)=>{
+      setImage((prev)=>[...prev, url])
+    })
+  })
+})
+  }, []);
+
+
+  const handleChange = (e) => {
+     if (e.target.files[0]) {
+      setImage(e.target.files[0]);
+    }
+  };
+ 
+
+  const handleUpload = () => {
+    if(image == null) return
+const imageRef = ref(storage, `images/${image.name + v4()}`)
+uploadBytes(imageRef, image).then(()=>{
+  alert('Image Uploaded')
+})
+  }
   useEffect(() => {
     /*  onAuthStateChanged(auth, (currentUser)=>{
       setUser(currentUser)
@@ -58,16 +112,37 @@ export default function BasicModal() {
   }, [user, username]);
 
   const signUp = async (e) => {
-    try {
-      e.preventDefault();
+    e.preventDefault();
+
+   /* try {
+      const auth = getAuth()
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      )
+    
+      const user = userCredential.user
+      updateProfile(auth.currentUser, {
+        displayName: username
+      })
+      
+    } catch (error) {
+      console.log(error.message)
+    }  */
+      try {
+    
       const user = await createUserWithEmailAndPassword(auth, email, password);
+     updateProfile(auth.currentUser, {
+        displayName: username
+      })
       onAuthStateChanged(auth, (currentUser) => {
         setUser(currentUser);
       });
       console.log(user);
     } catch (error) {
       console.log(error.message);
-    }
+    }  
 
     setOpen(false)
 
@@ -205,13 +280,33 @@ export default function BasicModal() {
           </center>
         </Box>
       </Modal>
+     
+       {user?.displayName ? (
+            <div>
+      <progress value={progress} max="100" />
+      <input
+        type="text"
+        placeholder="Enter a Caption"
+        onChange={(e) => setCaption(e.target.value)}
+        value={caption}
+      />
+      <input type="file" onChange={handleChange} />
+      <button onClick={handleUpload}>Upload</button>
+    </div>  
 
-      {user?.currentUser ? (
- <ImageUpload username={user.currentUser}/>
+  // <ImageUpload username={user.displayName}/>
       ):(
         <h3>Sorry you need to login to upload</h3>
-      )}
+      )}  
      
+     {posts.map(({ id, post }) => (
+       <Post
+       key={id}
+       username={post.username}
+       caption={post.caption}
+       imageUrl={post.imageUrl}
+     />
+      ))} 
     </div>
   );
 }
